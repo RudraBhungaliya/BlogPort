@@ -1,9 +1,17 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import BlogCard from "../components/BlogCard";
 import BlogContext from "../context/data/myContext";
 
 export default function AllBlogs() {
   const { blogs } = useContext(BlogContext);
+  const [query, setQuery] = useState("");
+
+  const filteredBlogs = blogs.filter((b) => {
+    const q = query.toLowerCase();
+    return(
+      b.title.toLowerCase().includes(q) || b.excerpt.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <main className="max-w-7xl mx-auto px-5 py-8">
@@ -11,14 +19,16 @@ export default function AllBlogs() {
 
       <input
         type="text"
+        value={query}
         placeholder="Search blogs..."
         className="w-full mb-6 p-2 border rounded"
+        onChange={(e) => setQuery(e.target.value)}
       />
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {blogs.length === 0 && <p>No blogs yet.</p>}
+        {filteredBlogs.length === 0 && <p>No blogs yet.</p>}
 
-        {blogs.map((post) => (
+        {filteredBlogs.map((post) => (
           <BlogCard key={post.id} post={post} />
         ))}
       </div>

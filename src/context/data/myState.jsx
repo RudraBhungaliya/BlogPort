@@ -7,9 +7,17 @@ export default function BlogState({ children }) {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [loaded, setLoaded] = useState(false);
+
   useEffect(() => {
-    localStorage.setItem("blogs", JSON.stringify(blogs));
-  }, [blogs]);
+    setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (loaded) {
+      localStorage.setItem("blogs", JSON.stringify(blogs));
+    }
+  }, [blogs, loaded]);
 
   const addBlog = (blog) => {
     setBlogs((prev) => [...prev, blog]);
@@ -20,11 +28,9 @@ export default function BlogState({ children }) {
   };
 
   const updateBlog = (updatedBlog) => {
-    setBlogs((prev) => {
-      prev.map((e) => {
-        e.id === updateBlog.id ? updatedBlog : b;
-      });
-    });
+    setBlogs((prev) =>
+      prev.map((b) => (b.id === updatedBlog.id ? updatedBlog : b))
+    );
   };
 
   return (
