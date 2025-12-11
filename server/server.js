@@ -11,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+import authRoutes from "./routes/auth.js";
+import blogRoutes from "./routes/blog.js";
+
 // connection
 mongoose
     .connect(process.env.MONGO_URI)
