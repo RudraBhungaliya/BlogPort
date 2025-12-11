@@ -8,7 +8,6 @@ import HomePage from "./pages/HomePage";
 import AllBlogs from "./pages/AllBlogs";
 import Dashboard from "./pages/Dashboard";
 import BlogInfo from "./pages/BlogInfo";
-import AdminLogin from "./pages/AdminLogin";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import CreateBlog from "./pages/CreateBlog";
@@ -69,16 +68,6 @@ export default function App() {
         <>
           <Navbar />
           <Contact />
-          <Footer />
-        </>
-      ),
-    },
-    {
-      path: "/admin",
-      element: (
-        <>
-          <Navbar />
-          <AdminLogin />
           <Footer />
         </>
       ),
