@@ -11,6 +11,7 @@ import NoPage from "./pages/NoPage";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import CreateBlog from "./pages/CreateBlog";
+import EditBlog from "./pages/EditBlog";
 
 export default function App() {
   const router = createBrowserRouter([
@@ -50,6 +51,16 @@ export default function App() {
         <>
           <Navbar />
           <AdminLogin />
+          <Footer />
+        </>
+      ),
+    },
+    {
+      path: "/edit-blog/:id",
+      element: (
+        <>
+          <Navbar />
+          <EditBlog />
           <Footer />
         </>
       ),
