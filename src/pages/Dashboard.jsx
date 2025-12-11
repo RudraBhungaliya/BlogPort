@@ -4,7 +4,17 @@ import BlogContext from "../context/data/myContext";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { blogs } = useContext(BlogContext);
+  const { blogs, deleteBlog, user, loaded } = useContext(BlogContext);
+
+  if (!loaded) return null;
+
+  const handleDelete = (blogId) => {
+    const ok = window.confirm("Are you sure you want to delete this blog?");
+    if (!ok) return;
+
+    deleteBlog(blogId);
+    alert("Blog deleted successfully.");
+  };
 
   return (
     <main className="max-w-5xl mx-auto px-6 py-12">
@@ -48,7 +58,12 @@ export default function Dashboard() {
               >
                 Edit
               </a>
-              <button className="text-red-600 hover:underline">Delete</button>
+              <button
+                onClick={() => handleDelete(blog.id)}
+                className="text-red-600 hover:underline"
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}

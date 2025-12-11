@@ -18,15 +18,18 @@ localforage.config({
 export default function BlogState({ children }) {
   const [blogs, setBlogs] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [user, setUser] = useState(null);
   const savingRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const saved = await localforage.getItem("blogs");
-        if (!cancelled && Array.isArray(saved)) {
-          setBlogs(saved);
+        const savedBlogs = await localforage.getItem("blogs");
+        const savedUser = await localforage.getItem("user");
+        if (!cancelled) {
+          if (Array.isArray(savedBlogs)) setBlogs(savedBlogs);
+          if (savedUser) setUser(savedUser);  
         }
       } catch (err) {
         console.error("Failed to load blogs from IndexedDB:", err);
@@ -42,17 +45,21 @@ export default function BlogState({ children }) {
   useEffect(() => {
     if (!loaded) return;
     if (savingRef.current) return;
+
     savingRef.current = true;
+
     (async () => {
       try {
         await localforage.setItem("blogs", blogs);
+        await localforage.setItem("user", user);
       } catch (err) {
-        console.error("Failed to save blogs to IndexedDB:", err);
+        console.error("Failed to save to IndexedDB:", err);
       } finally {
         savingRef.current = false;
       }
     })();
-  }, [blogs, loaded]);
+  }, [blogs, user, loaded]);
+
 
   const addBlog = (blog) => {
     setBlogs((prev) => [...prev, blog]);
@@ -66,12 +73,21 @@ export default function BlogState({ children }) {
     setBlogs((prev) => prev.map((b) => (b.id === updatedBlog.id ? updatedBlog : b)));
   };
 
+  const loginUser = (username) => {
+    setUser({
+      username,       
+      role: "author", 
+    });
+  };
+  
+  const logoutUser = () => setUser(null);
+
   const syncBlogToServer = async (blog) => {
     // POST /api/blogs or use supabase/storage
   };
 
   return (
-    <BlogContext.Provider value={{ blogs, addBlog, deleteBlog, updateBlog, loaded }}>
+    <BlogContext.Provider value={{ blogs, addBlog, deleteBlog, updateBlog, loaded, user, loginUser, logoutUser }}>
       {children}
     </BlogContext.Provider>
   );
