@@ -1,19 +1,27 @@
 import { useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
+import { useContext } from "react";
+import BlogContext from "./context/data/myContext";
 
 import HomePage from "./pages/HomePage";
 import AllBlogs from "./pages/AllBlogs";
 import Dashboard from "./pages/Dashboard";
 import BlogInfo from "./pages/BlogInfo";
 import AdminLogin from "./pages/AdminLogin";
-import NoPage from "./pages/NoPage";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import CreateBlog from "./pages/CreateBlog";
 import EditBlog from "./pages/EditBlog";
+import Loader from "./components/Loader";
+import ErrorPage from "./pages/ErrorPage";
+import About from "./pages/AboutUsPage";
+import Contact from "./pages/ContactUsPage";
 
 export default function App() {
+  const { blogs, loaded } = useContext(BlogContext);
+
+  if (!loaded) return <Loader />;
   const router = createBrowserRouter([
     {
       path: "/",
@@ -41,6 +49,26 @@ export default function App() {
         <>
           <Navbar />
           <Dashboard />
+          <Footer />
+        </>
+      ),
+    },
+    {
+      path: "/about",
+      element: (
+        <>
+          <Navbar />
+          <About />
+          <Footer />
+        </>
+      ),
+    },
+    {
+      path: "/contact",
+      element: (
+        <>
+          <Navbar />
+          <Contact />
           <Footer />
         </>
       ),
@@ -79,7 +107,9 @@ export default function App() {
       path: "create-blog",
       element: (
         <>
+          <Navbar />
           <CreateBlog />
+          <Footer />
         </>
       ),
     },
@@ -87,7 +117,7 @@ export default function App() {
       path: "*",
       element: (
         <>
-          <NoPage />
+          <ErrorPage />
         </>
       ),
     },

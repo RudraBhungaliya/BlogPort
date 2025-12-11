@@ -1,15 +1,19 @@
 import { useParams } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import BlogContext from "../context/data/myContext";
+import Loader from "../components/Loader";
+import CommentBox from "../components/CommentBox";
+import CommentList from "../components/CommentList";
 
 export default function BlogInfo() {
-  const { id } = useParams(); // GET ID PROPERLY
-  const { blogs } = useContext(BlogContext);
+  const { id } = useParams();
+  const { blogs, loaded, updateBlog } = useContext(BlogContext);
+  const [liked, setLiked] = useState(false);
 
-  // Find blog by ID
+  if (!loaded) return <Loader />;
+
   const blog = blogs.find((b) => b.id === id);
 
-  // If blog not found (user manually enters URL)
   if (!blog) {
     return (
       <main className="max-w-4xl mx-auto px-6 py-12 text-center">
@@ -37,16 +41,49 @@ export default function BlogInfo() {
 
       {/* Cover Image */}
       {blog.cover && (
-        <img
-          src={blog.cover}
-          alt="Blog Cover"
-          className="w-full mt-8 rounded-2xl shadow-lg"
-        />
+        <div className="w-full h-64 flex justify-center items-center bg-gray-100 rounded-lg mt-8">
+          <img
+            src={blog.cover}
+            alt="Blog Cover"
+            className="h-full w-auto object-contain rounded-lg"
+          />
+        </div>
       )}
 
       {/* Content */}
       <div className="prose prose-lg max-w-none mt-10 leading-relaxed text-gray-800 whitespace-pre-line">
         {blog.content}
+      </div>
+
+      {/* LIKE BUTTON */}
+      <div className="mt-10 flex items-center gap-3">
+        <button
+          onClick={() => {
+            if (liked) {
+              setLiked(false);
+              updateBlog({...blog, likes : (blog.likes - 1)});
+            }
+            else{
+              const updated = { ...blog, likes: (blog.likes || 0) + 1 };
+              updateBlog(updated);
+              setLiked(true);
+            }
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        >
+          👍 Like ({blog.likes || 0})
+        </button>
+      </div>
+
+      {/* COMMENTS */}
+      <div className="mt-10">
+        <h2 className="text-xl font-semibold mb-4">Comments</h2>
+
+        {/* Comment Input */}
+        <CommentBox blog={blog} />
+
+        {/* Comment List */}
+        <CommentList comments={blog.comments || []} />
       </div>
 
       {/* Actions */}

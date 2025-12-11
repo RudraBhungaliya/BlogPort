@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import BlogContext from "../context/data/myContext";
+import Loader from "../components/Loader";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { blogs, deleteBlog, user, loaded } = useContext(BlogContext);
 
-  if (!loaded) return null;
+  if (!loaded) return <Loader />;
 
   const handleDelete = (blogId) => {
     const ok = window.confirm("Are you sure you want to delete this blog?");

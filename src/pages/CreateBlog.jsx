@@ -82,7 +82,6 @@ export default function CreateBlogs() {
             type="file"
             accept="image/*"
             onChange={handleImageUpload}
-            required
             className="block text-sm file:mr-3 file:py-1 file:px-3 file:border file:border-gray-300 file:rounded file:bg-gray-300 file:text-black-700 file:cursor-pointer"
             style={{ width: "auto" }}
           />
@@ -96,7 +95,6 @@ export default function CreateBlogs() {
             className="w-full border p-3 rounded"
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
-            required
           />
         </div>
 

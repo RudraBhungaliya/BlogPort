@@ -1,9 +1,12 @@
 import { useContext, useState } from "react";
 import BlogCard from "../components/BlogCard";
 import BlogContext from "../context/data/myContext";
+import Loader from "../components/Loader";
 
 export default function AllBlogs() {
-  const { blogs } = useContext(BlogContext);
+  const { blogs, loaded } = useContext(BlogContext);
+
+  if (!loaded) return < Loader />
   const [query, setQuery] = useState("");
 
   const filteredBlogs = blogs.filter((b) => {

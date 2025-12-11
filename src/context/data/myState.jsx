@@ -62,7 +62,11 @@ export default function BlogState({ children }) {
 
 
   const addBlog = (blog) => {
-    setBlogs((prev) => [...prev, blog]);
+    setBlogs((prev) => [...prev,{
+      ...blog,
+      likes: 0, 
+      comments : [],
+    } ]);
   };
 
   const deleteBlog = (id) => {
@@ -70,7 +74,11 @@ export default function BlogState({ children }) {
   };
 
   const updateBlog = (updatedBlog) => {
-    setBlogs((prev) => prev.map((b) => (b.id === updatedBlog.id ? updatedBlog : b)));
+    setBlogs((prev) => prev.map((b) =>
+      b.id === updatedBlog.id
+        ? { ...b, ...updatedBlog }
+        : b
+    ));
   };
 
   const loginUser = (username) => {

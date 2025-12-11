@@ -1,9 +1,12 @@
 import BlogCard from "../components/BlogCard";
 import { useContext } from "react";
 import BlogContext from "../context/data/myContext";
+import Loader from "../components/Loader";
 
 export default function HomePage() {
-  const { blogs } = useContext(BlogContext);
+  const { blogs, loaded } = useContext(BlogContext);
+
+  if(!loaded) return <Loader />;
 
   const latest = [...blogs].reverse().slice(0, 6);
 
@@ -28,7 +31,7 @@ export default function HomePage() {
       <section>
         <h2 className="text-2xl font-semibold mb-4">Latest posts</h2>
 
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full h-full object-cover">
           {latest.length === 0 && <p>No posts yet.</p>}
 
           {latest.map((p) => (
