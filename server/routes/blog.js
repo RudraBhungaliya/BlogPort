@@ -9,8 +9,8 @@ router.post("/", auth, async (req, res) => {
   try {
     const { title, excerpt, content, cover } = req.body;
 
-    if (!title || !excerpt || !content)
-      return res.status(400).json({ msg: "Missing required fields" });
+    if (!title || !content)
+      return res.status(400).json({ msg: "Title and content are required" });
 
     const blog = await Blog.create({
       title,

@@ -49,8 +49,8 @@ export default function CreateBlogs() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title.trim() || !excerpt.trim() || !content.trim()) {
-      alert("Please fill in all required fields");
+    if (!title.trim() || !content.trim()) {
+      alert("Title and content are required");
       return;
     }
 
@@ -90,14 +90,13 @@ export default function CreateBlogs() {
 
         {/* EXCERPT */}
         <div>
-          <label className="block mb-1 font-medium">Excerpt</label>
+          <label className="block mb-1 font-medium">Excerpt <span className="text-gray-400">(optional)</span></label>
           <input
             type="text"
             className="w-full border p-3 rounded"
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
             placeholder="Short summary..."
-            required
           />
         </div>
 
