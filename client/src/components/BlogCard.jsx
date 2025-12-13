@@ -2,7 +2,7 @@ export default function BlogCard({ post }) {
   return (
     <article className="bg-white border rounded-lg shadow-sm hover:shadow-md transition overflow-hidden flex flex-col">
 
-      {/* FIXED SIZE IMAGE */}
+      {/* IMAGE */}
       <div className="w-full h-48 flex justify-center items-center bg-gray-100">
         {post.cover && (
           <img
@@ -21,11 +21,13 @@ export default function BlogCard({ post }) {
 
         <div className="mt-4 flex justify-between text-sm text-gray-500 px-1">
           <span>{post.author}</span>
-          <span>{new Date(post.date).toLocaleDateString()}</span>
+          <span>
+            {new Date(post.createdAt || post.date).toLocaleDateString()}
+          </span>
         </div>
 
         <a
-          href={`/blog/${post.id}`}
+          href={`/blog/${post._id}`}
           className="inline-block mt-3 text-blue-600 hover:underline text-sm"
         >
           Read more →

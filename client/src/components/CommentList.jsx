@@ -5,9 +5,9 @@ export default function CommentList({ comments }) {
 
   return (
     <div className="space-y-4">
-      {comments.map((c) => (
+      {comments.map((c, index) => (
         <div
-          key={c.id}
+          key={index}
           className="border rounded-lg p-3 bg-gray-50 shadow-sm"
         >
           <p className="text-gray-800">{c.text}</p>

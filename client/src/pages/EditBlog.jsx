@@ -7,23 +7,32 @@ export default function EditBlog() {
   const navigate = useNavigate();
   const { blogs, updateBlog } = useContext(BlogContext);
 
-  const curr = blogs.find((b) => b.id === id);
+  const curr = blogs.find((b) => b._id === id);
 
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
-  const [image, setImage] = useState(""); // URL
-  const [filePreview, setFilePreview] = useState("");
+  const [cover, setCover] = useState("");
 
   useEffect(() => {
     if (!curr) return;
 
     setTitle(curr.title);
-    setExcerpt(curr.excerpt || "");
+    setExcerpt(curr.excerpt);
     setContent(curr.content);
-    setImage(curr.image || "");
-    setFilePreview(curr.image || "");
+    setCover(curr.cover);
   }, [curr]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCover(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (!curr) {
     return (
@@ -36,27 +45,22 @@ export default function EditBlog() {
     );
   }
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const previewURL = URL.createObjectURL(file);
-    setFilePreview(previewURL);
-    setImage(previewURL);
-  };
-
-  const handleSave = () => {
-    if (!title.trim() || !content.trim()) return;
-
-    updateBlog({
-      ...curr,
+  const handleSave = async () => {
+    const updated = {
       title,
       excerpt,
       content,
-      image,
-      date: new Date().toLocaleDateString(),
-    });
+      cover,
+    };
 
+    const res = await updateBlog(curr._id, updated);
+
+    if (res?.error) {
+      alert("Failed to update blog");
+      return;
+    }
+
+    alert("Blog updated successfully!");
     navigate("/dashboard");
   };
 
@@ -66,26 +70,6 @@ export default function EditBlog() {
 
       <div className="mt-8 space-y-6">
 
-        {/* Image Upload */}
-        <div>
-          <label className="block font-medium">Cover Image</label>
-          <input
-            type="file"
-            accept="image/*"
-            className="w-full mt-2"
-            onChange={handleImageUpload}
-          />
-
-          {filePreview && (
-            <img
-              src={filePreview}
-              alt="Preview"
-              className="mt-4 w-full max-h-60 object-cover rounded-lg shadow"
-            />
-          )}
-        </div>
-
-        {/* Title */}
         <div>
           <label className="block font-medium">Title</label>
           <input
@@ -95,17 +79,33 @@ export default function EditBlog() {
           />
         </div>
 
-        {/* Excerpt */}
         <div>
           <label className="block font-medium">Excerpt</label>
-          <textarea
-            className="w-full border rounded-lg p-3 mt-1 h-24"
+          <input
+            className="w-full border rounded-lg p-3 mt-1"
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
-          ></textarea>
+          />
         </div>
 
-        {/* Content */}
+        <div>
+          <label className="block font-medium">Cover Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full border p-3 rounded"
+            onChange={handleImageChange}
+          />
+
+          {cover && (
+            <img
+              src={cover}
+              alt="Preview"
+              className="mt-3 h-32 object-cover rounded border"
+            />
+          )}
+        </div>
+
         <div>
           <label className="block font-medium">Content</label>
           <textarea
@@ -115,13 +115,13 @@ export default function EditBlog() {
           ></textarea>
         </div>
 
-        {/* Save */}
         <button
           onClick={handleSave}
           className="bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700 transition"
         >
           Save Changes
         </button>
+
       </div>
     </main>
   );

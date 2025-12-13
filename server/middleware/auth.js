@@ -1,29 +1,27 @@
 import jwt from "jsonwebtoken";
 
-export default function auth(req, res, next){
-  const headers = req.headedrs.authorization;
+export default function auth(req, res, next) {
+  const header = req.headers.authorization;
 
-  if(!headers){
+  if (!header) {
     return res.status(401).json({ msg: "No token provided" });
   }
 
-  // bearer tokenString
-  const token = headers.splitr(" ")[1];
+  // Format: "Bearer tokenString"
+  const token = header.split(" ")[1]; 
 
-  if(!token){
-    return res.status(401).json( { msg: "Token Missing"});
+  if (!token) {
+    return res.status(401).json({ msg: "Token missing" });
   }
 
-  try{
+  try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.user;// stores userId
-    next();// continue to routehandler
+
+    // We sign: { id: user._id }
+    req.userId = decoded.id;
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ msg: "Invalid token" });
   }
-  catch(err){
-    return res.status(401).json( {msg: "Invalid Token"} );
-  }
-
-    
-
-
-};
+}

@@ -1,65 +1,62 @@
 import express from "express";
-import User from "../models/User.js";
-import bcrypt from "bcryptjs";
+import User from "../models/User.js";   
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Register a new user
-router.post("/register", async (req, res) => {
+// Google client
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Google OAuth (frontend sends credential)
+router.post("/google", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { credential } = req.body;
 
-    // Checking if user already exists
-    const exists = await User.findOne({ email });
-
-    if (exists) {
-      return res.status(400).json({ msg: "User already exists" });
+    if (!credential) {
+      return res.status(400).json({ msg: "Missing Google credential" });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-
-    const newUser = await User.create({
-      username,
-      email,
-      password: hashed,
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    // Generate JWT token
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const { email, name } = ticket.getPayload();
 
-    return res.json({ newUser, token });
-  } catch (err) {
-    res.status(500).json({ msg: "Server error" });
-  }
-});
+    let user = await User.findOne({ email });
 
-// Login
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // check user exist
-    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      user = await User.create({
+        name,
+        email,
+        password: "GOOGLE_OAUTH_USER",
+      });
     }
 
-    // check password
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(400).json({ msg: "Incorrect Password" });
-    }
-
-    // create token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
-    res.json({ user, token });
-  } catch (err) {}
+    return res.json({ user, token });
+
+  } catch (err) {
+    console.error("GOOGLE LOGIN ERROR:", err);
+    return res.status(500).json({ msg: "Google authentication failed" });
+  }
 });
 
-export default router;
+  // Get current logged-in user
+  router.get("/me", auth, async (req, res) => {
+    try {
+      const user = await User.findById(req.userId).select("-password");
+      if (!user) return res.status(404).json({ msg: "User not found" });
+      return res.json(user);
+    } catch (err) {
+      console.error("/me error:", err);
+      return res.status(500).json({ msg: "Server error" });
+    }
+  });
+
+  export default router;

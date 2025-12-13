@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 import { useContext } from "react";
@@ -17,10 +17,26 @@ import ErrorPage from "./pages/ErrorPage";
 import About from "./pages/AboutUsPage";
 import Contact from "./pages/ContactUsPage";
 
+const API = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+
 export default function App() {
-  const { blogs, loaded } = useContext(BlogContext);
+  const { loaded, setToken, setUser, token } = useContext(BlogContext);
+
+  // Load user data from stored token on app initialization
+  useEffect(() => {
+    const loadUserFromToken = async () => {
+      const storedToken = localStorage.getItem("token");
+
+      if (storedToken && !token) {
+        setToken(storedToken);
+      }
+    };
+
+    loadUserFromToken();
+  }, []);
 
   if (!loaded) return <Loader />;
+  
   const router = createBrowserRouter([
     {
       path: "/",

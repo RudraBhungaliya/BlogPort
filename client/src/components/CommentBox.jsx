@@ -3,24 +3,20 @@ import BlogContext from "../context/data/myContext";
 
 export default function CommentBox({ blog }) {
   const [text, setText] = useState("");
-  const { updateBlog } = useContext(BlogContext); // MUST have updateBlog
+  const { updateBlog } = useContext(BlogContext);
 
   const handleAdd = () => {
     if (!text.trim()) return;
 
     const newComment = {
-      id: Date.now(),
       text,
       date: new Date().toLocaleString(),
     };
 
-    // FIX: use fallback for old blogs without comments
-    const updatedBlog = {
-      ...blog,
-      comments: [...(blog.comments || []), newComment],
-    };
+    const updatedComments = [...(blog.comments || []), newComment];
 
-    updateBlog(updatedBlog); // MUST run
+    updateBlog(blog._id, { comments: updatedComments });
+
     setText("");
   };
 

@@ -3,57 +3,71 @@ import { useNavigate } from "react-router-dom";
 import BlogContext from "../context/data/myContext";
 
 export default function CreateBlogs() {
-  const { addBlog } = useContext(BlogContext);
+  const { addBlog, user, token } = useContext(BlogContext);
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
-  const [cover, setCover] = useState(null);
-  const [coverPreview, setCoverPreview] = useState(null);
+  const [cover, setCover] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const getCurrentUser = () => {
-    return {
-      name: "Rudra",
-      avatar: "",
-    };
-  };
+  // Redirect if not logged in
+  if (!user || !token) {
+    return (
+      <main className="max-w-3xl mx-auto px-6 py-12">
+        <h1 className="text-3xl font-bold mb-6 text-red-600">Access Denied</h1>
+        <p className="text-gray-700">You must be logged in to create a blog.</p>
+        <button
+          onClick={() => navigate("/")}
+          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          Go Home
+        </button>
+      </main>
+    );
+  }
 
-  const user = getCurrentUser();
-
-  const handleImageUpload = (e) => {
+  // Convert chosen file → Base64 string (with size limit)
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Limit file size to 1MB
+    if (file.size > 1048576) {
+      alert("Image size must be less than 1MB");
+      return;
+    }
 
     const reader = new FileReader();
     reader.onloadend = () => {
       setCover(reader.result);
-      setCoverPreview(reader.result);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!cover) {
-      alert("Please upload a cover image");
+    if (!title.trim() || !excerpt.trim() || !content.trim()) {
+      alert("Please fill in all required fields");
       return;
     }
 
-    const newBlog = {
-      id: Date.now().toString(),
-      title,
-      excerpt,
-      content,
-      cover,
-      author: user.name,
-      avatar: user.avatar,
-      date: new Date().toLocaleDateString(),
-    };
+    setIsLoading(true);
 
-    addBlog(newBlog);
-    alert("Blog created successfully");
+    const newBlog = { title, excerpt, content, cover };
+
+    const result = await addBlog(newBlog);
+
+  setIsLoading(false);
+
+    if (result?.error) {
+      alert(`Failed to create blog: ${result.error}`);
+      return;
+    }
+
+    alert("Blog created successfully!");
     navigate("/dashboard");
   };
 
@@ -62,6 +76,7 @@ export default function CreateBlogs() {
       <h1 className="text-3xl font-bold mb-6">Create New Blog</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+
         {/* TITLE */}
         <div>
           <label className="block mb-1 font-medium">Blog Title</label>
@@ -74,28 +89,36 @@ export default function CreateBlogs() {
           />
         </div>
 
-        {/* COVER IMAGE */}
-        <div>
-          <label className="block mb-1 font-medium">Cover Image</label>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="block text-sm file:mr-3 file:py-1 file:px-3 file:border file:border-gray-300 file:rounded file:bg-gray-300 file:text-black-700 file:cursor-pointer"
-            style={{ width: "auto" }}
-          />
-        </div>
-
         {/* EXCERPT */}
         <div>
-          <label className="block mb-1 font-medium">Short Excerpt</label>
+          <label className="block mb-1 font-medium">Excerpt</label>
           <input
             type="text"
             className="w-full border p-3 rounded"
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
+            placeholder="Short summary..."
+            required
           />
+        </div>
+
+        {/* IMAGE UPLOAD */}
+        <div>
+          <label className="block mb-1 font-medium">Cover Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full border p-3 rounded"
+            onChange={handleImageChange}
+          />
+
+          {cover && (
+            <img
+              src={cover}
+              alt="Preview"
+              className="mt-3 h-32 object-cover rounded border"
+            />
+          )}
         </div>
 
         {/* CONTENT */}
@@ -112,9 +135,14 @@ export default function CreateBlogs() {
         {/* SUBMIT */}
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+          disabled={isLoading}
+          className={`${
+            isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          } text-white px-6 py-3 rounded-lg transition`}
         >
-          Publish Blog
+          {isLoading ? "Publishing..." : "Publish Blog"}
         </button>
       </form>
     </main>

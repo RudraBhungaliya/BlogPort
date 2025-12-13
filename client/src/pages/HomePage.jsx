@@ -35,7 +35,7 @@ export default function HomePage() {
           {latest.length === 0 && <p>No posts yet.</p>}
 
           {latest.map((p) => (
-            <BlogCard key={p.id} post={p} />
+            <BlogCard key={p._id} post={p} />
           ))}
         </div>
       </section>

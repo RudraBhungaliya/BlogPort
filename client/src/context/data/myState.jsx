@@ -1,101 +1,167 @@
-import { useEffect, useState, useRef } from "react";
-import localforage from "localforage";
+// BlogState.jsx
+import { useEffect, useState } from "react";
 import BlogContext from "./myContext";
 
-/*
-  myState.jsx using localForage (IndexedDB wrapper).
-  - Loads asynchronously on mount
-  - Avoids overwriting until load completes
-  - Persists changes async
-  - Ready for later server-sync hooks
-*/
-
-localforage.config({
-  name: "BlogPort",
-  storeName: "blogs_store", 
-});
+const API = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 export default function BlogState({ children }) {
   const [blogs, setBlogs] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [user, setUser] = useState(null);
-  const savingRef = useRef(false);
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
 
+  // Load user when token changes (persist login across pages)
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const savedBlogs = await localforage.getItem("blogs");
-        const savedUser = await localforage.getItem("user");
-        if (!cancelled) {
-          if (Array.isArray(savedBlogs)) setBlogs(savedBlogs);
-          if (savedUser) setUser(savedUser);  
-        }
-      } catch (err) {
-        console.error("Failed to load blogs from IndexedDB:", err);
-      } finally {
-        if (!cancelled) setLoaded(true);
+    const loadUser = async () => {
+      if (!token) {
+        setUser(null);
+        return;
       }
-    })();
-    return () => {
-      cancelled = true;
+
+      try {
+        const res = await fetch(`${API}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          // invalid token or server error
+          setUser(null);
+          return;
+        }
+
+        const data = await res.json();
+        setUser(data);
+      } catch (err) {
+        console.error("Failed to load user:", err);
+        setUser(null);
+      }
     };
+
+    loadUser();
+  }, [token]);
+
+  // LOAD ALL BLOGS
+  useEffect(() => {
+    const loadBlogs = async () => {
+      try {
+        const res = await fetch(`${API}/blogs`);
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ msg: "Server Error" }));
+          throw new Error(errorData.msg || `HTTP error! Status: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("API returned invalid data");
+        }
+
+        setBlogs(data);
+      } catch (err) {
+        console.error("Error fetching blogs:", err.message);
+      } finally {
+        setLoaded(true);
+      }
+    };
+
+    loadBlogs();
   }, []);
 
-  useEffect(() => {
-    if (!loaded) return;
-    if (savingRef.current) return;
 
-    savingRef.current = true;
+  // CREATE BLOG
+  const addBlog = async (blogData) => {
+    try {
+      const res = await fetch(`${API}/blogs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(blogData),
+      });
 
-    (async () => {
-      try {
-        await localforage.setItem("blogs", blogs);
-        await localforage.setItem("user", user);
-      } catch (err) {
-        console.error("Failed to save to IndexedDB:", err);
-      } finally {
-        savingRef.current = false;
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ msg: "Failed to create blog" }));
+        return { error: errorData.msg || `HTTP error! Status: ${res.status}` };
       }
-    })();
-  }, [blogs, user, loaded]);
 
-
-  const addBlog = (blog) => {
-    setBlogs((prev) => [...prev,{
-      ...blog,
-      likes: 0, 
-      comments : [],
-    } ]);
+      const saved = await res.json();
+      setBlogs((prev) => [saved, ...prev]);
+      return saved;
+    } catch (err) {
+      console.error("Failed to add blog:", err);
+      return { error: err.message };
+    }
   };
 
-  const deleteBlog = (id) => {
-    setBlogs((prev) => prev.filter((b) => b.id !== id));
+  // UPDATE BLOG
+  const updateBlog = async (id, updatedBlog) => {
+    try {
+      const res = await fetch(`${API}/blogs/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedBlog),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ msg: "Failed to update blog" }));
+        return { error: errorData.msg };
+      }
+
+      const updated = await res.json();
+
+      setBlogs((prev) =>
+        prev.map((b) => (b._id === id ? updated : b))
+      );
+
+      return updated;
+    } catch (err) {
+      console.error("Update failed:", err);
+      return { error: err.message };
+    }
   };
 
-  const updateBlog = (updatedBlog) => {
-    setBlogs((prev) => prev.map((b) =>
-      b.id === updatedBlog.id
-        ? { ...b, ...updatedBlog }
-        : b
-    ));
-  };
+  // DELETE BLOG
+  const deleteBlog = async (id) => {
+    try {
+      const res = await fetch(`${API}/blogs/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  const loginUser = (username) => {
-    setUser({
-      username,       
-      role: "author", 
-    });
-  };
-  
-  const logoutUser = () => setUser(null);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ msg: "Failed to delete blog" }));
+        return { error: errorData.msg };
+      }
 
-  const syncBlogToServer = async (blog) => {
-    // POST /api/blogs or use supabase/storage
+      setBlogs((prev) => prev.filter((b) => b._id !== id));
+      return { success: true };
+    } catch (err) {
+      console.error("Delete failed:", err);
+      return { error: err.message };
+    }
   };
 
   return (
-    <BlogContext.Provider value={{ blogs, addBlog, deleteBlog, updateBlog, loaded, user, loginUser, logoutUser }}>
+    <BlogContext.Provider
+      value={{
+        blogs,
+        addBlog,
+        updateBlog,
+        deleteBlog,
+        loaded,
+        user,
+        setUser,
+        token,
+        setToken,
+      }}
+    >
       {children}
     </BlogContext.Provider>
   );

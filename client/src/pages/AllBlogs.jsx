@@ -6,15 +6,16 @@ import Loader from "../components/Loader";
 export default function AllBlogs() {
   const { blogs, loaded } = useContext(BlogContext);
 
-  if (!loaded) return < Loader />
+  if (!loaded) return <Loader />;
+
   const [query, setQuery] = useState("");
 
-  const filteredBlogs = blogs.filter((b) => {
-    const q = query.toLowerCase();
-    return(
-      b.title.toLowerCase().includes(q) || b.excerpt.toLowerCase().includes(q)
-    );
-  });
+  const q = query.toLowerCase();
+
+  const filteredBlogs = blogs.filter((b) =>
+    b.title.toLowerCase().includes(q) ||
+    b.content.toLowerCase().includes(q)
+  );
 
   return (
     <main className="max-w-7xl mx-auto px-5 py-8">
@@ -29,10 +30,10 @@ export default function AllBlogs() {
       />
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredBlogs.length === 0 && <p>No blogs yet.</p>}
+        {filteredBlogs.length === 0 && <p>No blogs found.</p>}
 
         {filteredBlogs.map((post) => (
-          <BlogCard key={post.id} post={post} />
+          <BlogCard key={post._id} post={post} />
         ))}
       </div>
     </main>
