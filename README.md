@@ -24,6 +24,7 @@ A public feed displays blogs from all users, fetched and sorted using RESTful AP
 🧭 User Dashboard
 A personalized dashboard allows users to manage their own blogs and activity.
 
+
 🧠 Tech Stack
 
 🎨 Frontend
@@ -41,11 +42,16 @@ JSON Web Tokens (JWT), environment variables
 🛠️ Development Tools
 Git and GitHub
 
+
 🏗️ Architecture Overview
 
 The application follows a clean separation of concerns.
+
 🎯 The frontend handles UI rendering, state management, and API consumption.
+
 🧠 The backend manages authentication, authorization, and core business logic.
+
 💾 The database ensures persistent and structured data storage.
 
-All interactions flow through RESTful endpoints, ensuring scalability, maintainability, and clear data flow.
+
+
