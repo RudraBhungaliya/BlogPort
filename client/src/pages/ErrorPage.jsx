@@ -1,7 +1,6 @@
 export default function ErrorPage() {
   return (
     <main className="w-full h-screen flex flex-col items-center justify-center text-center px-6">
-      
       {/* Animated Icon */}
       <div className="text-6xl mb-4 animate-bounce">⚠️</div>
 
@@ -10,7 +9,8 @@ export default function ErrorPage() {
       </h1>
 
       <p className="text-gray-600 mt-3 max-w-md">
-        The page you're looking for doesn't exist, or an unexpected error occurred.
+        The page you're looking for doesn't exist, or an unexpected error
+        occurred.
       </p>
 
       <div className="mt-6 flex gap-4">

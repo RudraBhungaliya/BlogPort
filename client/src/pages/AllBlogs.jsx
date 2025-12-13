@@ -12,9 +12,9 @@ export default function AllBlogs() {
 
   const q = query.toLowerCase();
 
-  const filteredBlogs = blogs.filter((b) =>
-    b.title.toLowerCase().includes(q) ||
-    b.content.toLowerCase().includes(q)
+  const filteredBlogs = blogs.filter(
+    (b) =>
+      b.title.toLowerCase().includes(q) || b.content.toLowerCase().includes(q)
   );
 
   return (

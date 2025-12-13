@@ -1,7 +1,3 @@
-"server/.env" 
-".env" 
-"server/.env" 
-".env" 
-".env" 
-"server/.env" 
-".env.local" 
+.env
+server/.env
+client/.env.local

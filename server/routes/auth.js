@@ -1,5 +1,5 @@
 import express from "express";
-import User from "../models/User.js";   
+import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import auth from "../middleware/auth.js";
@@ -40,23 +40,22 @@ router.post("/google", async (req, res) => {
     });
 
     return res.json({ user, token });
-
   } catch (err) {
     console.error("GOOGLE LOGIN ERROR:", err);
     return res.status(500).json({ msg: "Google authentication failed" });
   }
 });
 
-  // Get current logged-in user
-  router.get("/me", auth, async (req, res) => {
-    try {
-      const user = await User.findById(req.userId).select("-password");
-      if (!user) return res.status(404).json({ msg: "User not found" });
-      return res.json(user);
-    } catch (err) {
-      console.error("/me error:", err);
-      return res.status(500).json({ msg: "Server error" });
-    }
-  });
+// Get current logged-in user
+router.get("/me", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) return res.status(404).json({ msg: "User not found" });
+    return res.json(user);
+  } catch (err) {
+    console.error("/me error:", err);
+    return res.status(500).json({ msg: "Server error" });
+  }
+});
 
-  export default router;
+export default router;

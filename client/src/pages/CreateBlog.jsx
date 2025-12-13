@@ -60,7 +60,7 @@ export default function CreateBlogs() {
 
     const result = await addBlog(newBlog);
 
-  setIsLoading(false);
+    setIsLoading(false);
 
     if (result?.error) {
       alert(`Failed to create blog: ${result.error}`);
@@ -76,7 +76,6 @@ export default function CreateBlogs() {
       <h1 className="text-3xl font-bold mb-6">Create New Blog</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-
         {/* TITLE */}
         <div>
           <label className="block mb-1 font-medium">Blog Title</label>

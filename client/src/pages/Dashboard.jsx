@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import BlogContext from "../context/data/myContext";
@@ -13,8 +12,8 @@ export default function Dashboard() {
   // Safe filtering for both object + string userId cases
   const myBlogs = blogs.filter(
     (b) =>
-      b.userId === user?._id ||        // userId is a string
-      b.userId?._id === user?._id      // userId is a populated object
+      b.userId === user?._id || // userId is a string
+      b.userId?._id === user?._id // userId is a populated object
   );
 
   // DELETE HANDLER
@@ -38,7 +37,9 @@ export default function Dashboard() {
   return (
     <main className="max-w-5xl mx-auto px-6 py-12">
       <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p className="text-gray-600 mt-2">Manage your blogs and write new posts.</p>
+      <p className="text-gray-600 mt-2">
+        Manage your blogs and write new posts.
+      </p>
 
       <button
         onClick={() => navigate("/create-blog")}

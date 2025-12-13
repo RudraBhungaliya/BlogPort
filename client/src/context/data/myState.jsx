@@ -47,7 +47,9 @@ export default function BlogState({ children }) {
         const res = await fetch(`${API}/blogs`);
 
         if (!res.ok) {
-          const errorData = await res.json().catch(() => ({ msg: "Server Error" }));
+          const errorData = await res
+            .json()
+            .catch(() => ({ msg: "Server Error" }));
           throw new Error(errorData.msg || `HTTP error! Status: ${res.status}`);
         }
 
@@ -68,7 +70,6 @@ export default function BlogState({ children }) {
     loadBlogs();
   }, []);
 
-
   // CREATE BLOG
   const addBlog = async (blogData) => {
     try {
@@ -82,7 +83,9 @@ export default function BlogState({ children }) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ msg: "Failed to create blog" }));
+        const errorData = await res
+          .json()
+          .catch(() => ({ msg: "Failed to create blog" }));
         return { error: errorData.msg || `HTTP error! Status: ${res.status}` };
       }
 
@@ -108,15 +111,15 @@ export default function BlogState({ children }) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ msg: "Failed to update blog" }));
+        const errorData = await res
+          .json()
+          .catch(() => ({ msg: "Failed to update blog" }));
         return { error: errorData.msg };
       }
 
       const updated = await res.json();
 
-      setBlogs((prev) =>
-        prev.map((b) => (b._id === id ? updated : b))
-      );
+      setBlogs((prev) => prev.map((b) => (b._id === id ? updated : b)));
 
       return updated;
     } catch (err) {
@@ -136,7 +139,9 @@ export default function BlogState({ children }) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ msg: "Failed to delete blog" }));
+        const errorData = await res
+          .json()
+          .catch(() => ({ msg: "Failed to delete blog" }));
         return { error: errorData.msg };
       }
 

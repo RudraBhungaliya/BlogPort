@@ -53,7 +53,6 @@ export default function Navbar() {
   return (
     <nav className="w-full bg-white border-b shadow-sm">
       <div className="max-w-7xl mx-auto py-4 px-5 flex items-center justify-between">
-        
         <a href="/" className="text-xl font-bold text-gray-900">
           BlogPort
         </a>

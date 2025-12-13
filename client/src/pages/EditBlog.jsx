@@ -69,7 +69,6 @@ export default function EditBlog() {
       <h1 className="text-3xl font-bold">Edit Blog</h1>
 
       <div className="mt-8 space-y-6">
-
         <div>
           <label className="block font-medium">Title</label>
           <input
@@ -121,7 +120,6 @@ export default function EditBlog() {
         >
           Save Changes
         </button>
-
       </div>
     </main>
   );

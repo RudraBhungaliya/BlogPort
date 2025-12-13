@@ -1,7 +1,6 @@
 export default function BlogCard({ post }) {
   return (
     <article className="bg-white border rounded-lg shadow-sm hover:shadow-md transition overflow-hidden flex flex-col">
-
       {/* IMAGE */}
       <div className="w-full h-48 flex justify-center items-center bg-gray-100">
         {post.cover && (
