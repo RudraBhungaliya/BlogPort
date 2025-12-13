@@ -6,6 +6,14 @@ const blogSchema = new mongoose.Schema({
   content: { type: String, required: true },
   cover: { type: String },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  comments: [
+    {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      text: { type: String },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
 }, { timestamps: true });
 
 export default mongoose.model("Blog", blogSchema);

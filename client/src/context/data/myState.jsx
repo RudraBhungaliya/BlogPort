@@ -59,7 +59,9 @@ export default function BlogState({ children }) {
           throw new Error("API returned invalid data");
         }
 
-        setBlogs(data);
+        // normalize likesCount for UI convenience
+        const normalized = data.map((b) => ({ ...b, likesCount: b.likes?.length || 0 }));
+        setBlogs(normalized);
       } catch (err) {
         console.error("Error fetching blogs:", err.message);
       } finally {
@@ -90,7 +92,8 @@ export default function BlogState({ children }) {
       }
 
       const saved = await res.json();
-      setBlogs((prev) => [saved, ...prev]);
+      const normalized = { ...saved, likesCount: saved.likes?.length || 0 };
+      setBlogs((prev) => [normalized, ...prev]);
       return saved;
     } catch (err) {
       console.error("Failed to add blog:", err);
@@ -153,6 +156,62 @@ export default function BlogState({ children }) {
     }
   };
 
+  // LIKE / UNLIKE
+  const toggleLike = async (id) => {
+    try {
+      const res = await fetch(`${API}/blogs/${id}/like`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return { error: err.msg || `HTTP ${res.status}` };
+      }
+
+      const data = await res.json();
+
+      // update local blog's likes count
+      setBlogs((prev) => prev.map((b) => (b._id === id ? { ...b, likesCount: data.likes } : b)));
+
+      return data;
+    } catch (err) {
+      console.error("Like failed:", err);
+      return { error: err.message };
+    }
+  };
+
+  // ADD COMMENT
+  const addComment = async (id, text) => {
+    try {
+      const res = await fetch(`${API}/blogs/${id}/comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return { error: err.msg || `HTTP ${res.status}` };
+      }
+
+      const data = await res.json();
+
+      // update local blog's comments
+      setBlogs((prev) => prev.map((b) => (b._id === id ? { ...b, comments: data.comments } : b)));
+
+      return data;
+    } catch (err) {
+      console.error("Add comment failed:", err);
+      return { error: err.message };
+    }
+  };
+
   return (
     <BlogContext.Provider
       value={{
@@ -165,6 +224,8 @@ export default function BlogState({ children }) {
         setUser,
         token,
         setToken,
+        toggleLike,
+        addComment,
       }}
     >
       {children}

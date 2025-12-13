@@ -33,7 +33,8 @@ router.get("/", async (req, res) => {
   try {
     const blogs = await Blog.find()
       .sort({ createdAt: -1 })
-      .populate("userId", "name");
+      .populate("userId", "name")
+      .populate({ path: 'comments.userId', select: 'name' });
 
     res.json(blogs);
   } catch (err) {
@@ -44,11 +45,58 @@ router.get("/", async (req, res) => {
 // GET SINGLE BLOG
 router.get("/:id", async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id).populate("userId", "name");
+    const blog = await Blog.findById(req.params.id)
+      .populate("userId", "name")
+      .populate({ path: 'comments.userId', select: 'name' });
 
     if (!blog) return res.status(404).json({ msg: "Blog not found" });
 
     res.json(blog);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
+
+// LIKE / UNLIKE
+router.post('/:id/like', auth, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ msg: 'Blog not found' });
+
+    const userId = req.userId;
+    const index = blog.likes.findIndex((id) => id.toString() === userId);
+
+    if (index === -1) {
+      blog.likes.push(userId);
+    } else {
+      blog.likes.splice(index, 1);
+    }
+
+    const updated = await blog.save();
+    await updated.populate('userId', 'name');
+    await updated.populate({ path: 'comments.userId', select: 'name' });
+
+    res.json({ likes: updated.likes.length, liked: index === -1 });
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
+
+// ADD COMMENT
+router.post('/:id/comment', auth, async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ msg: 'Comment text required' });
+
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ msg: 'Blog not found' });
+
+    blog.comments.push({ userId: req.userId, text });
+    const updated = await blog.save();
+    await updated.populate('userId', 'name');
+    await updated.populate({ path: 'comments.userId', select: 'name' });
+
+    res.json({ comments: updated.comments });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
