@@ -2,3 +2,6 @@
 ".env" 
 "server/.env" 
 ".env" 
+".env" 
+"server/.env" 
+".env.local" 
