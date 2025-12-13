@@ -32,15 +32,14 @@
   <h1>📝 BlogPort — A Full-Stack MERN Blogging Platform</h1>
 
   <p>
-    BlogPort is a full-stack blogging platform built using the
-    <strong>MERN stack</strong>, designed to support real users, real
-    interactions, and scalable backend logic.
+    BlogPort is a full-stack blogging platform built using the MERN stack,
+    designed to support real users, real interactions, and scalable backend logic.
   </p>
 
   <p>
     The platform enables authenticated users to create, publish, and engage
-    with content through <strong>real-time likes and comments</strong>,
-    delivering a responsive and interactive reading experience.
+    with content through real-time likes and comments, delivering a responsive
+    and interactive reading experience.
   </p>
 
   <div class="section">
@@ -99,7 +98,6 @@
       <li>Node.js</li>
       <li>Express.js</li>
       <li>RESTful APIs</li>
-      <li>Modular / MVC Architecture</li>
     </ul>
 
     <h3>Database</h3>
