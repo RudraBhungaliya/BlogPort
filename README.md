@@ -10,7 +10,7 @@ The platform allows authenticated users to create, publish, and engage with cont
 ----
 
 
-✨ Features
+✨ Features :
 
 
 
@@ -36,7 +36,7 @@ A personalized dashboard allows users to manage their own blogs and activity.
 ---- 
 
 
-🧠 Tech Stack
+🧠 Tech Stack :
 
 
 
@@ -60,7 +60,7 @@ Git and GitHub
 ---- 
 
 
-🏗️ Architecture Overview
+🏗️ Architecture Overview :
 
 
 
