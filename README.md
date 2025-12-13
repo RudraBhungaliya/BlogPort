@@ -1,5 +1,7 @@
 📝 BlogPort — A Full-Stack MERN Blogging Platform
 
+----
+
 
 BlogPort is a full-stack blogging platform built using the MERN stack, designed to support real users, real interactions, and scalable backend logic.
 
@@ -9,6 +11,7 @@ The platform allows authenticated users to create, publish, and engage with cont
 
 
 ✨ Features
+
 
 
 🔐 Secure Authentication
@@ -36,6 +39,7 @@ A personalized dashboard allows users to manage their own blogs and activity.
 🧠 Tech Stack
 
 
+
 🎨 Frontend
 React.js, React Hooks, Context API, Responsive UI
 
@@ -57,6 +61,7 @@ Git and GitHub
 
 
 🏗️ Architecture Overview
+
 
 
 🎯 The frontend handles UI rendering, state management, and API consumption.
