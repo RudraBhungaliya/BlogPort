@@ -8,7 +8,7 @@ export default function HomePage() {
 
   if(!loaded) return <Loader />;
 
-  const latest = [...blogs].reverse().slice(0, 6);
+  const latest = [...blogs].slice(0, 6);
 
   return (
     <main className="max-w-7xl mx-auto px-5 py-8">
