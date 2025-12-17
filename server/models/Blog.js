@@ -1,5 +1,30 @@
 import mongoose from "mongoose";
 
+const replySchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    text: { type: String, reqauired: true },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    createdAt: { type: Date, default: Date.now },
+  },
+  {
+    _id: true
+  }
+);
+
+const CommentSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    text: { type: String, required: true },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    replies: [ replySchema ],
+    createdAt: { type: Date, default: Date.now }
+  },
+  {
+    _id: true
+  }
+);
+
 const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   excerpt: { type: String, required: true },
@@ -7,13 +32,7 @@ const blogSchema = new mongoose.Schema({
   cover: { type: String },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  comments: [
-    {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      text: { type: String },
-      createdAt: { type: Date, default: Date.now },
-    },
-  ],
+  comments: [CommentSchema],
 }, { timestamps: true });
 
 export default mongoose.model("Blog", blogSchema);

@@ -1,5 +1,5 @@
 // BlogState.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import BlogContext from "./myContext";
 
 const API = import.meta.env.VITE_API_BASE || "http://localhost:5000";
@@ -10,7 +10,7 @@ export default function BlogState({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || "");
 
-  // Load user when token changes (persist login across pages)
+  /* ===================== LOAD USER ===================== */
   useEffect(() => {
     const loadUser = async () => {
       if (!token) {
@@ -22,17 +22,9 @@ export default function BlogState({ children }) {
         const res = await fetch(`${API}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (!res.ok) {
-          // invalid token or server error
-          setUser(null);
-          return;
-        }
-
-        const data = await res.json();
-        setUser(data);
-      } catch (err) {
-        console.error("Failed to load user:", err);
+        if (!res.ok) throw new Error();
+        setUser(await res.json());
+      } catch {
         setUser(null);
       }
     };
@@ -40,30 +32,15 @@ export default function BlogState({ children }) {
     loadUser();
   }, [token]);
 
-  // LOAD ALL BLOGS
+  /* ===================== LOAD BLOGS ===================== */
   useEffect(() => {
     const loadBlogs = async () => {
       try {
         const res = await fetch(`${API}/blogs`);
-
-        if (!res.ok) {
-          const errorData = await res
-            .json()
-            .catch(() => ({ msg: "Server Error" }));
-          throw new Error(errorData.msg || `HTTP error! Status: ${res.status}`);
-        }
-
-        const data = await res.json();
-
-        if (!Array.isArray(data)) {
-          throw new Error("API returned invalid data");
-        }
-
-        // normalize likesCount for UI convenience
-        const normalized = data.map((b) => ({ ...b, likesCount: b.likes?.length || 0 }));
-        setBlogs(normalized);
-      } catch (err) {
-        console.error("Error fetching blogs:", err.message);
+        if (!res.ok) throw new Error();
+        setBlogs(await res.json());
+      } catch (e) {
+        console.error("Load blogs failed", e);
       } finally {
         setLoaded(true);
       }
@@ -72,160 +49,120 @@ export default function BlogState({ children }) {
     loadBlogs();
   }, []);
 
-  // CREATE BLOG
-  const addBlog = async (blogData) => {
-    try {
-      const res = await fetch(`${API}/blogs`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(blogData),
-      });
+  /* ===================== LIKE BLOG ===================== */
+  const toggleLike = async (blogId) => {
+    const res = await fetch(`${API}/blogs/${blogId}/like`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-      if (!res.ok) {
-        const errorData = await res
-          .json()
-          .catch(() => ({ msg: "Failed to create blog" }));
-        return { error: errorData.msg || `HTTP error! Status: ${res.status}` };
-      }
+    if (!res.ok) throw new Error("Like failed");
+    const { likes } = await res.json();
 
-      const saved = await res.json();
-      const normalized = { ...saved, likesCount: saved.likes?.length || 0 };
-      setBlogs((prev) => [normalized, ...prev]);
-      return saved;
-    } catch (err) {
-      console.error("Failed to add blog:", err);
-      return { error: err.message };
-    }
+    setBlogs((prev) =>
+      prev.map((b) =>
+        b._id === blogId ? { ...b, likes: Array(likes).fill(1) } : b
+      )
+    );
   };
 
-  // UPDATE BLOG
-  const updateBlog = async (id, updatedBlog) => {
-    try {
-      const res = await fetch(`${API}/blogs/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedBlog),
-      });
+  /* ===================== ADD COMMENT ===================== */
+  const addComment = async (blogId, text) => {
+    const res = await fetch(`${API}/blogs/${blogId}/comment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ text }),
+    });
 
-      if (!res.ok) {
-        const errorData = await res
-          .json()
-          .catch(() => ({ msg: "Failed to update blog" }));
-        return { error: errorData.msg };
-      }
+    if (!res.ok) throw new Error("Comment failed");
+    const { comments } = await res.json();
 
-      const updated = await res.json();
-
-      setBlogs((prev) => prev.map((b) => (b._id === id ? updated : b)));
-
-      return updated;
-    } catch (err) {
-      console.error("Update failed:", err);
-      return { error: err.message };
-    }
+    setBlogs((prev) =>
+      prev.map((b) => (b._id === blogId ? { ...b, comments } : b))
+    );
   };
 
-  // DELETE BLOG
-  const deleteBlog = async (id) => {
-    try {
-      const res = await fetch(`${API}/blogs/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  /* ===================== LIKE COMMENT ===================== */
+  const likeComment = useCallback(
+    async (blogId, commentId) => {
+      const res = await fetch(
+        `${API}/blogs/${blogId}/comment/${commentId}/like`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      if (!res.ok) {
-        const errorData = await res
-          .json()
-          .catch(() => ({ msg: "Failed to delete blog" }));
-        return { error: errorData.msg };
-      }
+      if (!res.ok) throw new Error("Comment like failed");
 
-      setBlogs((prev) => prev.filter((b) => b._id !== id));
-      return { success: true };
-    } catch (err) {
-      console.error("Delete failed:", err);
-      return { error: err.message };
-    }
-  };
+      const updatedComment = await res.json();
 
-  // LIKE / UNLIKE
-  const toggleLike = async (id) => {
-    try {
-      const res = await fetch(`${API}/blogs/${id}/like`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      setBlogs((prev) =>
+        prev.map((b) =>
+          b._id !== blogId
+            ? b
+            : {
+                ...b,
+                comments: b.comments.map((c) =>
+                  c._id === commentId ? updatedComment : c
+                ),
+              }
+        )
+      );
+    },
+    [token]
+  );
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        return { error: err.msg || `HTTP ${res.status}` };
-      }
+  /* ===================== REPLY TO COMMENT ===================== */
+  const replyToComment = useCallback(
+    async (blogId, commentId, text) => {
+      const res = await fetch(
+        `${API}/blogs/${blogId}/comment/${commentId}/reply`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ text }),
+        }
+      );
 
-      const data = await res.json();
+      if (!res.ok) throw new Error("Reply failed");
 
-      // update local blog's likes count
-      setBlogs((prev) => prev.map((b) => (b._id === id ? { ...b, likesCount: data.likes } : b)));
+      const updatedComment = await res.json();
 
-      return data;
-    } catch (err) {
-      console.error("Like failed:", err);
-      return { error: err.message };
-    }
-  };
-
-  // ADD COMMENT
-  const addComment = async (id, text) => {
-    try {
-      const res = await fetch(`${API}/blogs/${id}/comment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ text }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        return { error: err.msg || `HTTP ${res.status}` };
-      }
-
-      const data = await res.json();
-
-      // update local blog's comments
-      setBlogs((prev) => prev.map((b) => (b._id === id ? { ...b, comments: data.comments } : b)));
-
-      return data;
-    } catch (err) {
-      console.error("Add comment failed:", err);
-      return { error: err.message };
-    }
-  };
+      setBlogs((prev) =>
+        prev.map((b) =>
+          b._id !== blogId
+            ? b
+            : {
+                ...b,
+                comments: b.comments.map((c) =>
+                  c._id === commentId ? updatedComment : c
+                ),
+              }
+        )
+      );
+    },
+    [token]
+  );
 
   return (
     <BlogContext.Provider
       value={{
         blogs,
-        addBlog,
-        updateBlog,
-        deleteBlog,
         loaded,
         user,
-        setUser,
         token,
         setToken,
         toggleLike,
         addComment,
+        likeComment,
+        replyToComment,
       }}
     >
       {children}

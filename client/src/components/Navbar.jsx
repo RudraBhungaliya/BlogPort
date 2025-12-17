@@ -95,7 +95,7 @@ export default function Navbar() {
         ) : (
           <GoogleLogin
             onSuccess={handleGoogleLoginSuccess}
-            onError={() => alert("Google login failed")}
+            //onError={() => alert("Google login failed")}
             text="signin_with"
           />
         )}
