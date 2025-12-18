@@ -68,9 +68,7 @@ router.post("/:id/like", auth, async (req, res) => {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ msg: "Blog not found" });
 
-    const index = blog.likes.findIndex(
-      (id) => id.toString() === req.userId
-    );
+    const index = blog.likes.findIndex((id) => id.toString() === req.userId);
 
     if (index === -1) blog.likes.push(req.userId);
     else blog.likes.splice(index, 1);
@@ -122,9 +120,7 @@ router.post("/:blogId/comment/:commentId/like", auth, async (req, res) => {
   const comment = blog.comments.id(commentId);
   if (!comment) return res.status(404).json({ msg: "Comment not found" });
 
-  const index = comment.likes.findIndex(
-    (id) => id.toString() === userId
-  );
+  const index = comment.likes.findIndex((id) => id.toString() === userId);
 
   if (index === -1) comment.likes.push(userId);
   else comment.likes.splice(index, 1);
@@ -139,11 +135,14 @@ router.post("/:blogId/comment/:commentId/like", auth, async (req, res) => {
   res.json(updatedComment);
 });
 
-
 /* ===================== REPLY TO COMMENT ===================== */
 router.post("/:blogId/comment/:commentId/reply", auth, async (req, res) => {
   const { blogId, commentId } = req.params;
   const { text } = req.body;
+
+  if (!text) {
+    return res.status(400).json({ msg: "Reply text required" });
+  }
 
   const blog = await Blog.findById(blogId);
   if (!blog) return res.status(404).json({ msg: "Blog not found" });
@@ -152,17 +151,19 @@ router.post("/:blogId/comment/:commentId/reply", auth, async (req, res) => {
   if (!comment) return res.status(404).json({ msg: "Comment not found" });
 
   comment.replies.push({
-    text,
     userId: req.userId,
+    text,
     createdAt: new Date(),
   });
 
   await blog.save();
+
   const populatedBlog = await Blog.findById(blogId)
     .populate("comments.userId", "name")
     .populate("comments.replies.userId", "name");
 
-  res.json({ comments: populatedBlog.comments });
+  const updatedComment = populatedBlog.comments.id(commentId);
+  res.json(updatedComment);
 });
 
 /* ===================== UPDATE BLOG ===================== */
