@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import BlogContext from "../context/data/myContext";
@@ -7,6 +7,7 @@ const API = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, setUser, setToken } = useContext(BlogContext);
 
   const navItems = [
@@ -58,13 +59,24 @@ export default function Navbar() {
         </a>
 
         <ul className="flex items-center gap-8 text-gray-700">
-          {navItems.map((item) => (
-            <li key={item.label}>
-              <a href={item.href} className="hover:text-blue-500 transition">
-                {item.label}
-              </a>
-            </li>
-          ))}
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.href;
+
+            return (
+              <li key={item.label}>
+                <a
+                  href={item.href}
+                  className={`relative transition ${
+                    isActive
+                      ? "text-blue-600 font-semibold glitter"
+                      : "text-gray-700 hover:text-blue-500"
+                  }`}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })}
 
           {user && (
             <li>
