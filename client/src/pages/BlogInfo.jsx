@@ -9,11 +9,13 @@ export default function BlogInfo() {
   const {
     blogs,
     loaded,
+    user,
     token,
     toggleLike,
     addComment,
     likeComment,
     replyToComment,
+    deleteReply,
   } = useContext(BlogContext);
 
   const [commentText, setCommentText] = useState("");
@@ -35,9 +37,7 @@ export default function BlogInfo() {
   return (
     <main className="max-w-4xl mx-auto px-6 py-12">
       {/* TITLE */}
-      <h1 className="text-4xl font-bold text-gray-900">
-        {blog.title}
-      </h1>
+      <h1 className="text-4xl font-bold text-gray-900">{blog.title}</h1>
 
       {/* AUTHOR */}
       <div className="mt-2 text-sm text-gray-600">
@@ -81,9 +81,7 @@ export default function BlogInfo() {
         {blog.comments?.length > 0 ? (
           blog.comments.map((c) => (
             <div key={c._id} className="border p-3 rounded mb-4">
-              <div className="font-medium">
-                {c.userId?.name || "Unknown"}
-              </div>
+              <div className="font-medium">{c.userId?.name || "Unknown"}</div>
 
               <div className="text-sm mt-1">{c.text}</div>
 
@@ -96,9 +94,7 @@ export default function BlogInfo() {
                 </button>
 
                 <button
-                  onClick={() =>
-                    setReplyBox(replyBox === c._id ? null : c._id)
-                  }
+                  onClick={() => setReplyBox(replyBox === c._id ? null : c._id)}
                   className="hover:text-blue-600"
                 >
                   Reply
@@ -107,11 +103,27 @@ export default function BlogInfo() {
 
               {/* REPLIES */}
               {c.replies?.length > 0 && (
-                <div className="ml-4 mt-3 space-y-2">
+                <div className="ml-4 mt-3 space-y-2 bg-gray-50 p-2 rounded">
                   {c.replies.map((r) => (
-                    <div key={r._id} className="border-l pl-3 text-sm">
-                      <strong>{r.userId?.name || "Unknown"}:</strong>{" "}
-                      {r.text}
+                    <div
+                      key={r._id}
+                      className="border-l pl-3 text-sm flex justify-between items-start gap-4"
+                    >
+                      <div>
+                        <strong className="text-gray-800">
+                          {r.userId?.name || "Unknown"}:
+                        </strong>{" "}
+                        <span className="text-gray-700">{r.text}</span>
+                      </div>
+
+                      {user && r.userId?._id === user._id && (
+                        <button
+                          onClick={() => deleteReply(blog._id, c._id, r._id)}
+                          className="text-xs text-red-500 hover:text-red-700 whitespace-nowrap"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -129,8 +141,8 @@ export default function BlogInfo() {
                   <button
                     onClick={() => {
                       if (replyText.trim()) {
-  replyToComment(blog._id, c._id, replyText.trim());
-}
+                        replyToComment(blog._id, c._id, replyText.trim());
+                      }
 
                       setReplyText("");
                       setReplyBox(null);

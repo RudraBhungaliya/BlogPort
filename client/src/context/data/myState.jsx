@@ -85,6 +85,34 @@ export default function BlogState({ children }) {
     );
   };
 
+  /* ===================== DELETE REPLY ===================== */
+  const deleteReply = async (blogId, commentId, replyId) => {
+    const res = await fetch(
+      `${API}/blogs/${blogId}/comment/${commentId}/reply/${replyId}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (!res.ok) throw new Error("Delete reply failed");
+
+    const updatedComment = await res.json();
+
+    setBlogs((prev) =>
+      prev.map((b) =>
+        b._id !== blogId
+          ? b
+          : {
+              ...b,
+              comments: b.comments.map((c) =>
+                c._id === commentId ? updatedComment : c
+              ),
+            }
+      )
+    );
+  };
+
   /* ===================== LIKE COMMENT ===================== */
   const likeComment = useCallback(
     async (blogId, commentId) => {
@@ -163,6 +191,7 @@ export default function BlogState({ children }) {
         addComment,
         likeComment,
         replyToComment,
+        deleteReply,
       }}
     >
       {children}
