@@ -39,10 +39,17 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      process.env.CLIENT_URL
+    ],
     credentials: true,
   })
 );
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", uptime: process.uptime() });
+});
 
 import authRoutes from "./routes/auth.js";
 import blogRoutes from "./routes/blog.js";
