@@ -16,6 +16,7 @@ export default function BlogInfo() {
     likeComment,
     replyToComment,
     deleteReply,
+    deleteComment,
   } = useContext(BlogContext);
 
   const [commentText, setCommentText] = useState("");
@@ -36,21 +37,17 @@ export default function BlogInfo() {
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-12">
-      {/* TITLE */}
       <h1 className="text-4xl font-bold text-gray-900">{blog.title}</h1>
 
-      {/* AUTHOR */}
       <div className="mt-2 text-sm text-gray-600">
         {blog.userId?.name || "Unknown"} •{" "}
         {new Date(blog.createdAt).toLocaleDateString()}
       </div>
 
-      {/* EXCERPT */}
       {blog.excerpt && (
         <p className="mt-4 italic text-gray-700">{blog.excerpt}</p>
       )}
 
-      {/* COVER (NOT TOUCHED) */}
       {blog.cover && (
         <div className="mt-6 flex justify-center">
           <img
@@ -61,12 +58,10 @@ export default function BlogInfo() {
         </div>
       )}
 
-      {/* CONTENT */}
       <div className="mt-8 whitespace-pre-line prose max-w-none">
         {blog.content}
       </div>
 
-      {/* BLOG LIKE */}
       <button
         onClick={() => token && toggleLike(blog._id)}
         className="mt-6 px-4 py-2 bg-blue-600 text-white rounded"
@@ -74,17 +69,37 @@ export default function BlogInfo() {
         👍 Like ({blog.likes?.length || 0})
       </button>
 
-      {/* COMMENTS */}
       <div className="mt-10">
         <h3 className="font-semibold mb-4">Comments</h3>
 
         {blog.comments?.length > 0 ? (
           blog.comments.map((c) => (
-            <div key={c._id} className="border p-3 rounded mb-4">
-              <div className="font-medium">{c.userId?.name || "Unknown"}</div>
+            <div
+              key={c._id}
+              className={`border p-3 rounded mb-4 ${
+                user && c.userId?._id === user._id
+                  ? "bg-gray-50 border-gray-300"
+                  : ""
+              }`}
+            >
+              {/* COMMENT HEADER */}
+              <div className="flex justify-between items-start">
+                <div className="font-medium">{c.userId?.name || "Unknown"}</div>
 
+                {user && c.userId?._id === user._id && (
+                  <button
+                    onClick={() => deleteComment(blog._id, c._id)}
+                    className="text-xs text-red-500 hover:text-red-700"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+
+              {/* COMMENT TEXT */}
               <div className="text-sm mt-1">{c.text}</div>
 
+              {/* COMMENT ACTIONS */}
               <div className="flex gap-4 text-xs mt-2 text-gray-600">
                 <button
                   onClick={() => likeComment(blog._id, c._id)}
@@ -110,16 +125,13 @@ export default function BlogInfo() {
                       className="border-l pl-3 text-sm flex justify-between items-start gap-4"
                     >
                       <div>
-                        <strong className="text-gray-800">
-                          {r.userId?.name || "Unknown"}:
-                        </strong>{" "}
-                        <span className="text-gray-700">{r.text}</span>
+                        <strong>{r.userId?.name || "Unknown"}:</strong> {r.text}
                       </div>
 
                       {user && r.userId?._id === user._id && (
                         <button
                           onClick={() => deleteReply(blog._id, c._id, r._id)}
-                          className="text-xs text-red-500 hover:text-red-700 whitespace-nowrap"
+                          className="text-xs text-red-500 hover:text-red-700"
                         >
                           Delete
                         </button>
@@ -143,7 +155,6 @@ export default function BlogInfo() {
                       if (replyText.trim()) {
                         replyToComment(blog._id, c._id, replyText.trim());
                       }
-
                       setReplyText("");
                       setReplyBox(null);
                     }}
@@ -159,7 +170,6 @@ export default function BlogInfo() {
           <div className="text-gray-500">No comments yet.</div>
         )}
 
-        {/* ADD COMMENT */}
         <textarea
           value={commentText}
           onChange={(e) => setCommentText(e.target.value)}

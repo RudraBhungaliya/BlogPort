@@ -179,6 +179,22 @@ export default function BlogState({ children }) {
     [token]
   );
 
+  /* ===================== DELETE COMMENT ===================== */
+  const deleteComment = async (blogId, commentId) => {
+    const res = await fetch(`${API}/blogs/${blogId}/comment/${commentId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) throw new Error("Delete comment failed");
+
+    const { comments } = await res.json();
+
+    setBlogs((prev) =>
+      prev.map((b) => (b._id === blogId ? { ...b, comments } : b))
+    );
+  };
+
   return (
     <BlogContext.Provider
       value={{
@@ -192,6 +208,7 @@ export default function BlogState({ children }) {
         likeComment,
         replyToComment,
         deleteReply,
+        deleteComment,
       }}
     >
       {children}

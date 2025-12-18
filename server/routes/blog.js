@@ -200,6 +200,33 @@ router.delete(
   }
 );
 
+/* ===================== DELETE COMMENT ===================== */
+router.delete("/:blogId/comment/:commentId", auth, async (req, res) => {
+  const { blogId, commentId } = req.params;
+
+  const blog = await Blog.findById(blogId);
+  if (!blog) return res.status(404).json({ msg: "Blog not found" });
+
+  const comment = blog.comments.id(commentId);
+  if (!comment) return res.status(404).json({ msg: "Comment not found" });
+
+  // 🔒 only comment author can delete
+  if (comment.userId.toString() !== req.userId) {
+    return res
+      .status(403)
+      .json({ msg: "Not authorized to delete this comment" });
+  }
+
+  comment.deleteOne();
+  await blog.save();
+
+  const populatedBlog = await Blog.findById(blogId)
+    .populate("comments.userId", "name")
+    .populate("comments.replies.userId", "name");
+
+  res.json({ comments: populatedBlog.comments });
+});
+
 /* ===================== UPDATE BLOG ===================== */
 router.put("/:id", auth, async (req, res) => {
   try {
