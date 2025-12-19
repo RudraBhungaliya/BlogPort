@@ -195,6 +195,86 @@ export default function BlogState({ children }) {
     );
   };
 
+  /* ===================== ADD BLOG ===================== */
+  const addBlog = async (blogData) => {
+    try {
+      const res = await fetch(`${API}/blogs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(blogData),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return { error: err.msg || "Create blog failed" };
+      }
+
+      const newBlog = await res.json();
+
+      setBlogs((prev) => [newBlog, ...prev]);
+
+      return newBlog;
+    } catch (err) {
+      console.error("Add blog error:", err);
+      return { error: "Network error" };
+    }
+  };
+
+  /* ===================== EDIT BLOG ===================== */
+  const editBlog = async (blogId, updatedData) => {
+    try {
+      const res = await fetch(`${API}/blogs/${blogId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return { error: err.msg || "Edit failed" };
+      }
+
+      const updatedBlog = await res.json();
+
+      setBlogs((prev) => prev.map((b) => (b._id === blogId ? updatedBlog : b)));
+
+      return updatedBlog;
+    } catch (err) {
+      console.error("Edit blog error:", err);
+      return { error: "Network error" };
+    }
+  };
+
+  /* ===================== DELETE BLOG ===================== */
+  const deleteBlog = async (blogId) => {
+    try {
+      const res = await fetch(`${API}/blogs/${blogId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return { error: err.msg || "Delete failed" };
+      }
+
+      setBlogs((prev) => prev.filter((b) => b._id !== blogId));
+
+      return { success: true };
+    } catch (err) {
+      console.error("Delete blog error:", err);
+      return { error: "Network error" };
+    }
+  };
+
   return (
     <BlogContext.Provider
       value={{
@@ -209,6 +289,9 @@ export default function BlogState({ children }) {
         replyToComment,
         deleteReply,
         deleteComment,
+        addBlog,
+        editBlog,
+        deleteBlog,
       }}
     >
       {children}
