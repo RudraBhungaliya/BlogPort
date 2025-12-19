@@ -5,7 +5,7 @@ import BlogContext from "../context/data/myContext";
 export default function EditBlog() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { blogs, updateBlog } = useContext(BlogContext);
+  const { blogs, editBlog } = useContext(BlogContext);
 
   const curr = blogs.find((b) => b._id === id);
 
@@ -53,7 +53,7 @@ export default function EditBlog() {
       cover,
     };
 
-    const res = await updateBlog(curr._id, updated);
+    const res = await editBlog(curr._id, updated);
 
     if (res?.error) {
       alert("Failed to update blog");
