@@ -32,19 +32,15 @@ export default function Navbar() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        alert(`Login failed: ${errorData.msg}`);
-        return;
+        throw new Error("Backend login failed");
       }
 
       const data = await res.json();
 
-      if (data.token && data.user) {
-        // store token and user
-        localStorage.setItem("token", data.token);
-        setToken(data.token);
-        setUser(data.user);
-      }
+      // store token and user
+      localStorage.setItem("token", data.token);
+      setToken(data.token);
+      setUser(data.user);
     } catch (err) {
       console.error("Login error:", err);
       alert("Login failed. Please try again.");

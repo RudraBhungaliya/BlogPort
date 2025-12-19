@@ -281,6 +281,7 @@ export default function BlogState({ children }) {
         blogs,
         loaded,
         user,
+        setUser,
         token,
         setToken,
         toggleLike,
