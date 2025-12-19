@@ -10,7 +10,6 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 const app = express();
-app.use(cors());
 
 if (!process.env.MONGO_URI) {
   console.error(
@@ -35,14 +34,10 @@ if (!process.env.GOOGLE_CLIENT_ID) {
   );
 }
 
-
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+const vercelRegex = /\.vercel\.app$/;
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://blog-port-xrgggq3wc-rudrabhungaliya-projects.vercel.app",
-  "https://blog-port-beta.vercel.app",
   "https://blogport.onrender.com"
 ];
 
@@ -50,22 +45,35 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+
+      const isAllowedString = allowedOrigins.includes(origin);
+      const isVercelUrl = vercelRegex.test(origin);
+
+      if (isAllowedString || isVercelUrl) {
+        callback(null, true);
+      } else {
+        console.warn("CORS blocked request from:", origin);
+        callback(new Error("Not allowed by CORS"));
       }
-      return callback(new Error("CORS blocked: " + origin));
     },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.options("*", cors());
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 import authRoutes from "./routes/auth.js";
 import blogRoutes from "./routes/blog.js";
 
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => console.error("❌ MongoDB Error:", err));
+.connect(process.env.MONGO_URI)
+.then(() => console.log("✅ Connected to MongoDB"))
+.catch((err) => console.error("❌ MongoDB Error:", err));
 
 app.use("/auth", authRoutes);
 app.use("/blogs", blogRoutes);
