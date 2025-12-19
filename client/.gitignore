@@ -23,4 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
+client\git
+client\node_modules
+
 
