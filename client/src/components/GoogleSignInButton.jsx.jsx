@@ -3,12 +3,13 @@ import { useContext } from "react";
 import BlogContext from "../context/data/myContext";
 
 export default function GoogleSignInButton() {
+  const API = import.meta.env.VITE_API_BASE;
   const { setUser, setToken } = useContext(BlogContext);
 
   return (
     <GoogleLogin
       onSuccess={async (response) => {
-        const res = await fetch("http://localhost:5000/auth/google", {
+        const res = await fetch(`${API}/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ credential: response.credential }),
