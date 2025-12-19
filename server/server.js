@@ -9,6 +9,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, ".env") });
 
+const app = express();
+app.use(cors());
+
 if (!process.env.MONGO_URI) {
   console.error(
     "DEBUG: MONGO_URI is undefined. Listing env keys:",
@@ -32,7 +35,6 @@ if (!process.env.GOOGLE_CLIENT_ID) {
   );
 }
 
-const app = express();
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -40,7 +42,8 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 const allowedOrigins = [
   "http://localhost:5173",
   "https://blog-port-xrgggq3wc-rudrabhungaliya-projects.vercel.app",
-  "https://blog-port-beta.vercel.app"
+  "https://blog-port-beta.vercel.app",
+  "https://blogport.onrender.com"
 ];
 
 app.use(
