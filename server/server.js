@@ -37,19 +37,24 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://blog-port-xrgggq3wc-rudrabhungaliya-projects.vercel.app",
+  "https://blog-port-beta.vercel.app"
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.CLIENT_URL
-    ],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS blocked: " + origin));
+    },
     credentials: true,
   })
 );
-
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", uptime: process.uptime() });
-});
 
 import authRoutes from "./routes/auth.js";
 import blogRoutes from "./routes/blog.js";

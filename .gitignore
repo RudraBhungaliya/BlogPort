@@ -1,4 +1,4 @@
 .env
 server/.env
 client/.env.local
-node_modules/
+# node_modules*
